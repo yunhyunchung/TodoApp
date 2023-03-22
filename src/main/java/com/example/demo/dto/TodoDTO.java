@@ -15,8 +15,10 @@ public class TodoDTO {
     private String title;  // Todo 타이틀
     private boolean done;
 
+    // DTO는 TodoEntity 객체로부터 속성 값 받아서 생성됨
     public TodoDTO(final TodoEntity entity) {
         this.id = entity.getId();
+        // userId는 숨김
         this.title = entity.getTitle();
         this.done = entity.isDone();
     }

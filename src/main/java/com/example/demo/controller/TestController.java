@@ -47,9 +47,8 @@ public class TestController {
         List<String> list = new ArrayList<>();
         list.add("Hello World! I'm ResponseEntity. And you got 400!");
         ResponseDTO<String> response = ResponseDTO.<String>builder().data(list).build();
-        // http response를 서버 상태를 200으로 설정
-        return ResponseEntity.ok().body(response);
-        // http response를 서버 상태를 400으로 설정
-        //return ResponseEntity.badRequest().body(response);
+
+        return ResponseEntity.ok().body(response); // http response: 서버 status 200
+        //return ResponseEntity.badRequest().body(response);   // 서버 status 404
     }
 }
