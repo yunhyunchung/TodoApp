@@ -33,7 +33,6 @@ public class TodoController {
     public ResponseEntity<?> createTodo(@RequestBody TodoDTO dto) {
         try {
             String temporaryUserId = "temporary-user";  // 임시 아이디
-
             //(1) TodoEntity로 변환한다.
             TodoEntity entity = TodoDTO.toEntity(dto);
 
@@ -66,7 +65,6 @@ public class TodoController {
     @GetMapping
     public ResponseEntity<?> retrieveTodoList() {
         String temporaryUserId = "temporary-user";
-
         //(1) 서비스 메소드의 retrieve() 메소드를 사용해 Todo 리스트 가져옴
         List<TodoEntity> entities = service.retrieve(temporaryUserId);
 
@@ -78,6 +76,45 @@ public class TodoController {
 
         //(4) ResponseDTO 리턴
         return ResponseEntity.ok().body(response);
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateTodo(@RequestBody TodoDTO dto) {     // TodoItem 수정
+        String temporaryUserId = "temporary-user";
+
+        TodoEntity entity = TodoDTO.toEntity(dto);      //(1) dto를 entity로 변환
+        entity.setUserId(temporaryUserId);      //(2) id를 temporaryUserId로 초기화.
+
+        // (3) 서비스를 이용해 entity 업데이트
+        List<TodoEntity> entities = service.update(entity);
+
+        // (4), (5), (6) 반복 (entity => todoDto => responseDTO)
+        List<TodoDTO> dtos = entities.stream().map(TodoDTO::new).collect(Collectors.toList());  // (4) 자바 스트림을 이용해 리턴된 엔터티 리스트 => TodoDTO 리스트로 변환
+        ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().data(dtos).build();  // (5) 변환된 TodoDTO 리스트를 이용해 ResponseDTO 초기화
+        return ResponseEntity.ok().body(response);  // (6) ResponseDTO 리턴
+    }
+
+    @DeleteMapping          // TodoItem 삭제
+    public ResponseEntity<?> deleteTodo(@RequestBody TodoDTO dto) {
+        try {
+            String temporaryUserId = "temporary-user";
+
+            TodoEntity entity = TodoDTO.toEntity(dto);   //(1) DTO를 TodoEntity로 변환
+            entity.setUserId(temporaryUserId);      //(2) 임시 사용자 아이디 설정
+
+            //(3) 서비스를 이용해 entity 삭제
+            List<TodoEntity> entities = service.delete(entity);
+
+            // (4), (5), (6) 반복 (entity => todoDto => responseDTO)
+            List<TodoDTO> dtos = entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+            ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().data(dtos).build();
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            // (7) 혹시 예외가 있는 경우 dto 대신 error에 메시지 넣어 리턴
+            String error = e.getMessage();
+            ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().error(error).build();
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     /* 과제
